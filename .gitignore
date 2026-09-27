@@ -1,0 +1,52 @@
+node_modules/
+.env
+.DS_Store
+dist/
+build/
+coverage/
+*.log
+.next/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+
+# Build output
+.next/
+dist/
+build/
+
+# Logs
+*.log
+logs/
+
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.temp
+coverage/
+
+# Runtime / temporary files
+*.pid
+backend/full_html.html
+backend/headers.txt
+backend/static_file.js
+
+# Local test/debug scripts
+backend/test-*.js
+backend/test-*.sh
+backend/start-server-for-subagent.sh
+
+# AI coding-agent metadata
+backend/.agents/
+backend/.claude/
+backend/.cursor/
+backend/.devin/

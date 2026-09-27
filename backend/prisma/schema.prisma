@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String            @id @default(uuid())
+  googleId         String?           @unique
+  email            String            @unique
+  name             String?
+  avatarUrl        String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  senders          Sender[]
+  campaigns        Campaign[]
+  slackConnections SlackConnection[]
+}
+
+model Sender {
+  id        String     @id @default(uuid())
+  userId    String
+  user      User       @relation(fields: [userId], references: [id])
+  email     String
+  name      String?
+  smtpConfig Json?      // For storing SMTP credentials or config if needed beyond Ethereal
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  campaigns Campaign[]
+  emails    Email[]
+}
+
+model Campaign {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  senderId    String
+  sender      Sender   @relation(fields: [senderId], references: [id])
+  subject     String
+  body        String
+  startAt     DateTime?
+  delayMs     Int      @default(5000)
+  hourlyLimit Int      @default(100)
+  idempotencyKey String? @unique
+  attachments Json?    // Stores array of { filename, content (base64), contentType, size }
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  emails      Email[]
+}
+
+model Email {
+  id             String    @id @default(uuid())
+  campaignId     String
+  campaign       Campaign  @relation(fields: [campaignId], references: [id])
+  senderId       String
+  sender         Sender    @relation(fields: [senderId], references: [id])
+  recipient      String
+  subject        String
+  body           String
+  scheduledAt    DateTime?
+  sentAt         DateTime?
+  processingAt   DateTime?
+  status         EmailStatus @default(SCHEDULED)
+  attempts       Int       @default(0)
+  bullJobId      String?
+  messageId      String?
+  idempotencyKey String?   @unique
+  attachments    Json?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model SlackConnection {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  accessToken String
+  teamId      String?
+  channelId   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum EmailStatus {
+  SCHEDULED
+  QUEUED
+  PROCESSING
+  SENT
+  RETRY_WAIT
+  FAILED
+}
